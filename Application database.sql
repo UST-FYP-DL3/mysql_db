@@ -178,3 +178,4 @@ LEFT JOIN STOCK ON
 PORTFOLIO.stock = STOCK.stock
 and PORTFOLIO.portfolio_id = STOCK.portfolio_id
 and PORTFOLIO.stock_action = STOCK.stock_action;
+
