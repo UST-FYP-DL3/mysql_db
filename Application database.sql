@@ -1,37 +1,40 @@
--- drop database application;
+-- drop database application; //comment 
 CREATE DATABASE application;
 USE application;
 CREATE TABLE USER_FULLINFO (
-    userid varchar(20) NOT NULL,
-    username varchar(20) NOT NULL,
-    user_password varchar(40) NOT NULL,
-    risk_acceptance_level double default 0,
-    monthly_expense double default 0,
-    total_asset double default 0,   -- market value of all portfolios + total cash held
-    principal double default 0,     -- original investment amount
-    cash double default 0,          -- total cash held, cash <= total_asset
-    monthly_income double default NULL,
-    first_invest_day varchar(20) NOT NULL,
-    email varchar(40) NOT NULL,
-    sex varchar(10) NOT NULL,
-    age double default NULL,
-    primary key (userid),
-    unique (email));
-
+    userid VARCHAR(20) NOT NULL,
+    username VARCHAR(20) NOT NULL,
+    user_password VARCHAR(40) NOT NULL,
+    risk_acceptance_level DOUBLE DEFAULT 0,
+    monthly_expense DOUBLE DEFAULT 0,
+    total_asset DOUBLE DEFAULT 0,
+    principal DOUBLE DEFAULT 0,
+    cash DOUBLE DEFAULT 0,
+    monthly_income DOUBLE DEFAULT NULL,
+    first_invest_day VARCHAR(20) NOT NULL,
+    email VARCHAR(40) NOT NULL,
+    sex VARCHAR(10) NOT NULL,
+    age DOUBLE DEFAULT NULL,
+    PRIMARY KEY (userid),
+    UNIQUE (email)
+);
+-- dummy data
 INSERT INTO `USER_FULLINFO` VALUES ('123456789', 'Eric','ilovehkust',1,2000,31100,28815,100,3000,
 '01/01/2020','cymaae@connect.ust.hk','M',20);
 INSERT INTO `USER_FULLINFO` VALUES ('324565944', 'Mary','ihatehkust',2,1000,1800,1400,300,300,
 '01/03/2020','mary@connect.ust.hk','F',19);
 
--- drop table user_info;
 CREATE TABLE USER_INFO (
-    userid varchar(20) NOT NULL,
-    portfolio_id varchar(20) NOT NULL,
-    portfolio_quantity int default 0,
-    primary key (userid, portfolio_id),
-    FOREIGN KEY (userid) REFERENCES USER_FULLINFO (userid)
-    on delete cascade on update cascade
+    userid VARCHAR(20) NOT NULL,
+    portfolio_id VARCHAR(20) NOT NULL,
+    portfolio_quantity INT DEFAULT 0,
+    PRIMARY KEY (userid , portfolio_id),
+    FOREIGN KEY (userid)
+        REFERENCES USER_FULLINFO (userid)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- dummy data
 INSERT INTO `USER_INFO` VALUES ('123456789', '234567891',2);
 INSERT INTO `USER_INFO` VALUES ('123456789', '981542267',2);
 INSERT INTO `USER_INFO` VALUES ('324565944', '785112123',1);
@@ -44,17 +47,20 @@ FROM USER_INFO
 LEFT JOIN USER_FULLINFO ON USER_INFO.userid = USER_FULLINFO.userid;
 
 CREATE TABLE TRANSACTION_HISTORY (
-    userid varchar(20) NOT NULL,
-    portfolio_id varchar(20) NOT NULL,
-	stock varchar(20) NOT NULL,
-    begin_trade_time varchar(20) NOT NULL,
-    end_trade_time varchar(20) default NULL,
-    buy_price double NOT NULL,
-    sell_price double default NULL,
-    primary key(userid, portfolio_id,stock,begin_trade_time),
-    FOREIGN KEY (userid, portfolio_id) REFERENCES USER_INFO (userid, portfolio_id)
-    on delete cascade on update cascade
+    userid VARCHAR(20) NOT NULL,
+    portfolio_id VARCHAR(20) NOT NULL,
+    stock VARCHAR(20) NOT NULL,
+    begin_trade_time VARCHAR(20) NOT NULL,
+    end_trade_time VARCHAR(20) DEFAULT NULL,
+    buy_price DOUBLE NOT NULL,
+    sell_price DOUBLE DEFAULT NULL,
+    PRIMARY KEY (userid , portfolio_id , stock , begin_trade_time),
+    FOREIGN KEY (userid , portfolio_id)
+        REFERENCES USER_INFO (userid , portfolio_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- dummy data
 INSERT INTO `TRANSACTION_HISTORY` VALUES('123456789','234567891','AAPL','5/6/2021',NULL,460,NULL);
 INSERT INTO `TRANSACTION_HISTORY` VALUES('123456789','234567891','Goldman Sachs','2/3/2021',NULL,291.5,NULL);
 INSERT INTO `TRANSACTION_HISTORY` VALUES('123456789','981542267','Google','8/10/2021',NULL,835,NULL);
@@ -68,16 +74,18 @@ USER_INFO.userid = TRANSACTION_HISTORY.userid
 and USER_INFO.portfolio_id = TRANSACTION_HISTORY.portfolio_id
 and USER_INFO.userid = '123456789';
 
--- drop table FRIENDSHIP;
 CREATE TABLE FRIENDSHIP (
-    userid varchar(20) NOT NULL,
-    has_friend boolean,
-    friend_user_id varchar(20) default NULL,
-    primary key(userid),
-	FOREIGN KEY (userid) REFERENCES USER_INFO (userid),
-    FOREIGN KEY (friend_user_id) REFERENCES USER_INFO (userid)
+    userid VARCHAR(20) NOT NULL,
+    has_friend BOOLEAN,
+    friend_user_id VARCHAR(20) DEFAULT NULL,
+    PRIMARY KEY (userid),
+    FOREIGN KEY (userid)
+        REFERENCES USER_INFO (userid),
+    FOREIGN KEY (friend_user_id)
+        REFERENCES USER_INFO (userid)
 );
 
+-- dummy data
 INSERT INTO `FRIENDSHIP` VALUES ('123456789', true,'324565944');
 INSERT INTO `FRIENDSHIP` VALUES ('324565944', true,'123456789');
 
@@ -87,25 +95,27 @@ FROM USER_INFO
 LEFT JOIN FRIENDSHIP ON 
 USER_INFO.userid = FRIENDSHIP.userid;
 
--- drop table PORTFOLIO;
 CREATE TABLE PORTFOLIO (
-    userid varchar(20) NOT NULL,
-    portfolio_id varchar(20) NOT NULL,
-    stock varchar(20) NOT NULL,
-    profit double default 0,
-    return_rate double default 0, -- return_rate = profit+dividend_total/principal = (total_balance - principal)/principal
-    dividend_total double default 0,          
-    investment_horizon double default 0, -- unit: day
-    stock_action varchar(4) NOT NULL, -- action: buy/ hold/ sell
-    num_of_share double default 0,
-    total_balance double default 0, -- total market value of all number of shares of the stock
-    principal double default 0,
-    primary key(portfolio_id , stock, stock_action),
-    FOREIGN KEY (userid, portfolio_id) REFERENCES USER_INFO (userid, portfolio_id),
-    FOREIGN KEY (userid, portfolio_id,stock) REFERENCES TRANSACTION_HISTORY(userid, portfolio_id,stock)
-    on delete cascade on update cascade
+    userid VARCHAR(20) NOT NULL,
+    portfolio_id VARCHAR(20) NOT NULL,
+    stock VARCHAR(20) NOT NULL,
+    profit DOUBLE DEFAULT 0,
+    return_rate DOUBLE DEFAULT 0,
+    dividend_total DOUBLE DEFAULT 0,
+    investment_horizon DOUBLE DEFAULT 0,
+    stock_action VARCHAR(4) NOT NULL,
+    num_of_share DOUBLE DEFAULT 0,
+    total_balance DOUBLE DEFAULT 0,
+    principal DOUBLE DEFAULT 0,
+    PRIMARY KEY (portfolio_id , stock , stock_action),
+    FOREIGN KEY (userid , portfolio_id)
+        REFERENCES USER_INFO (userid , portfolio_id),
+    FOREIGN KEY (userid , portfolio_id , stock)
+        REFERENCES TRANSACTION_HISTORY (userid , portfolio_id , stock)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- dummy data
 INSERT INTO `PORTFOLIO` VALUES('123456789','234567891','AAPL',500,8.6957,300,30,'buy',20,10000,9200);
 INSERT INTO `PORTFOLIO` VALUES('123456789','234567891','Goldman Sachs',15,2.9160,70,30,'hold',10,3000,2915);
 INSERT INTO `PORTFOLIO` VALUES('123456789','981542267','Google',800,7.78,500,30,'buy',20,18000,16700);
@@ -134,24 +144,26 @@ and PORTFOLIO.stock = TRANSACTION_HISTORY.stock;
 
 
 CREATE TABLE STOCK (
-	dates varchar(20) NOT NULL,
-    portfolio_id varchar(20) NOT NULL,
-    stock varchar(20) NOT NULL,
-    industry varchar(40) NOT NULL,
-    current_price double NOT NULL,
-    dividend_per_share double default 0,
-    volatility double,
-    volume double default 0,
-    PX_OPEN double,
-    PX_HIGH double,
-    PX_LOW double,
-    PX_CLOSE double,
-    stock_action varchar(4) NOT NULL, -- action: buy/ hold/ sell
-    primary key(dates, stock, portfolio_id,stock_action),
-    FOREIGN KEY (portfolio_id, stock, stock_action) REFERENCES PORTFOLIO (portfolio_id, stock,stock_action)
-    on delete cascade on update cascade
+    dates VARCHAR(20) NOT NULL,
+    portfolio_id VARCHAR(20) NOT NULL,
+    stock VARCHAR(20) NOT NULL,
+    industry VARCHAR(40) NOT NULL,
+    current_price DOUBLE NOT NULL,
+    dividend_per_share DOUBLE DEFAULT 0,
+    volatility DOUBLE,
+    volume DOUBLE DEFAULT 0,
+    PX_OPEN DOUBLE,
+    PX_HIGH DOUBLE,
+    PX_LOW DOUBLE,
+    PX_CLOSE DOUBLE,
+    stock_action VARCHAR(4) NOT NULL,
+    PRIMARY KEY (dates , stock , portfolio_id , stock_action),
+    FOREIGN KEY (portfolio_id , stock , stock_action)
+        REFERENCES PORTFOLIO (portfolio_id , stock , stock_action)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- dummy data
 INSERT INTO `STOCK` VALUES('5/6/2021','234567891','AAPL','technology',460,15,3.6,5000000,460,480,445,463,'buy');
 INSERT INTO `STOCK` VALUES('2/3/2021','234567891','Goldman Sachs','finance/banking',291.5,7,2.5,900000,291.5,296,290,292,'hold');
 INSERT INTO `STOCK` VALUES('8/10/2021','981542267','Google','technology',835,25,3.1,8000000,835,840,832,835.5,'buy');
